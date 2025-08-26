@@ -1,0 +1,81 @@
+@startuml
+
+enum Hitbox_t{
+	square
+	circle
+}
+
+class Block{
+	
+	path : str
+	solid : bool
+	bounce : float
+	'scales the rebound of any object falling on it
+	breakable : bool
+
+}
+
+class Map{
+	
+	w : int
+	h : int
+
+	blocks : Block[][]
+
+}
+
+class Hitbox{
+	x : int
+	y : int
+	w : int
+	h : int
+
+	t : Hitbox_t
+
+	{static} +bool hits(a : Hitbox, b : Hitbox)
+}
+
+class Engine{
+	
+	fps : int
+	map : Map
+	blocksize : int
+	player : InteractableObject
+	entities : InteractableObject[]
+	hits : tuple[]
+	current_blocks : Block[]
+
+
+
+	+void detect_hits()
+	+void calculate_current_blocks()
+	'to avoid checking all blocks for collision
+	+void redraw()
+
+}
+
+class InteractableObject{
+	
+	x : int
+	y : int
+	w : int
+	h : int
+
+	hitboxes : Hitbox[]
+
+	+void onHit(other : InteractableObject)
+	+void move(K : Keys)
+	+void draw(screen : Any, blocksize : int)
+
+
+}
+
+Hitbox --> Hitbox_t
+InteractableObject --> Hitbox
+Engine --> InteractableObject
+Block --|> InteractableObject
+Map --> Block
+Engine --> Map
+
+
+@enduml
