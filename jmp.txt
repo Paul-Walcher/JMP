@@ -66,7 +66,26 @@ class InteractableObject{
 	+void onHit(other : InteractableObject)
 	+void move(K : Keys)
 	+void draw(screen : Any, blocksize : int)
+	+void move(x : int, y : int)
 
+
+}
+
+class Animation{
+	
+	images : pygame.image[]
+	animation_speed : float[]
+	loop : bool
+	paused : bool
+	visible : bool
+
+	+void draw(screen : Any, blocksize : int)
+
+	+void pause()
+	+void continue()
+	+void hide()
+	+void show()
+	+void reset()
 
 }
 
@@ -76,6 +95,5 @@ Engine --> InteractableObject
 Block --|> InteractableObject
 Map --> Block
 Engine --> Map
-
 
 @enduml

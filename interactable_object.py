@@ -1,24 +1,52 @@
-from abc import ABC, abstractmethod
 from __future__ import annotations
+
+from abc import ABC, abstractmethod
+
 
 class InteractableObject(ABC):
 
-	def __init__(self, x: int, y: int, w: int, h: int, hitboxes = []):
+	def __init__(self, x: int, y: int, w: int, h: int, hitboxes = [], static_object = False, solid=True):
 
 		self.x = x
 		self.y = y
 		self.w = w
 		self.h = h
+		self.x_vel = 0
+		self.y_vel = 0
 		self.hitboxes = hitboxes
+		self.static_object = static_object
+		self.solid = solid #if the player can go through
 
 	@abstractmethod
 	def onHit(self, other: InteractableObject) -> None:
 		pass
 
 	@abstractmethod
-	def move(self, keys) -> None:
+	def onKeys(self, keys) -> None:
 		pass
 
 	@abstractmethod
-	def draw(self, screen, blocksize) -> None:
+	def draw(self, screen) -> None:
 		pass
+
+	def move_absolute(self):
+
+		self.x += int(self.x_vel)
+		self.y += int(self.y_vel)
+
+		for hitbox in self.hitboxes:
+
+			hitbox.x += int(self.x_vel)
+			hitbox.y += int(self.y_vel)
+
+	def set_position(self, x, y, w, h):
+
+		diff = (x - self.x, y-self.y, w-self.w, h - self.h)
+		self.x = x
+		self.y = y
+		self.w = w
+		self.h = h
+
+		for hitbox in self.hitboxes:
+
+			hitbox.x, hitbox.y, hitbox.w, hitbox.h = hitbox.x + diff[0], hitbox.y+diff[1], hitbox.w + diff[2], hitbox.h + diff[3]
