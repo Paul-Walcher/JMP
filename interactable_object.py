@@ -29,6 +29,15 @@ class InteractableObject(ABC):
 	def draw(self, screen) -> None:
 		pass
 
+	def hits(self, other):
+
+		for h1 in self.hitboxes:
+			for h2 in other.hitboxes:
+
+				if h1.hits(h2):
+					return (h1, h2)
+		return None
+
 	def move_absolute(self):
 
 		self.x += int(self.x_vel)

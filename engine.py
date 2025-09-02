@@ -19,11 +19,34 @@ class Engine:
 		self.test_ground_2 = InvisibleWall(0, height-300, width-200, 100)
 		self.test_ground_3 = InvisibleWall(0, 200, 20, 100)
 
+		self.test_ground_4 = InvisibleWall(300, 300, 20, 100)
+		self.test_ground_5 = InvisibleWall(width-50, height-50, 50, 60)
+		self.test_ground_6 = InvisibleWall(
+											width, height-100, width, 100,
+											)
+
+
+		self.x_margin = 50
+		self.y_margin = 50
+
+		self.wall_left = InvisibleWall(0, 0, self.x_margin, self.height)
+		self.wall_right = InvisibleWall(self.width - self.x_margin, 0, self.x_margin, self.height)
+
+		self.wall_top = InvisibleWall(0, 0, self.width, self.y_margin)
+		self.wall_bottom = InvisibleWall(0, self.height - self.y_margin, self.width, self.y_margin)
+
+		self.scrollx = 0
+		self.scrolly = 0
+
+
 		self.test_player = TestPlayer(100, 100, 50, 50)
 		self.screen_objects.append(self.test_ground)
 		self.screen_objects.append(self.test_ground_2)
 		self.screen_objects.append(self.test_ground_3)
+		self.screen_objects.append(self.test_ground_4)
+		self.screen_objects.append(self.test_ground_5)
 		self.screen_objects.append(self.test_player)
+
 
 
 
@@ -41,21 +64,6 @@ class Engine:
 		gravity = 0.5
 		friction = 4
 
-		for obj in self.screen_objects:
-			if not obj.static_object:
-				obj.y_vel += gravity
-
-		#applying friction
-
-		for obj in self.screen_objects:
-			
-			if obj.x_vel < 0:
-
-				obj.x_vel += min(friction, abs(obj.x_vel))
-
-			elif obj.x_vel > 0:
-
-				obj.x_vel -= min(friction, abs(obj.x_vel))
 
 		#tracing the collision
 		trace_steps = 10
@@ -133,8 +141,8 @@ class Engine:
 								if x_hit:
 									break
 
-								if (h1_org.x + h1_org.w < h2.x and h1.x + h1.w >= h2.x and not ((h1.y > h2.y + h2.h) or (h1.y + h1.h < h2.y)))\
-								 or (h1_org.x > h2.x + h2.w and h1.x  <= h2.x + h2.w) and not ((h1.y > h2.y + h2.h) or (h1.y + h1.h < h2.y)):
+								if (h1_org.x + h1_org.w < h2.x and h1.x + h1.w >= h2.x and not ((h1.y >= h2.y + h2.h) or (h1.y + h1.h <= h2.y)))\
+								 or (h1_org.x > h2.x + h2.w and h1.x  <= h2.x + h2.w) and not ((h1.y >= h2.y + h2.h) or (h1.y + h1.h <= h2.y)):
 									print(True)
 									x_hitboxes = (h1, h2, i)
 									x_hit = True
@@ -158,7 +166,6 @@ class Engine:
 				else:
 					x = obj.x + (x_hitboxes[1].x + x_hitboxes[1].w - x_hitboxes[0].x) - x_hitboxes[0].x + obj.x
 					obj.set_position(x, obj.y, obj.w, obj.h)
-					print(x)
 
 
 			if y_hit:
@@ -177,22 +184,71 @@ class Engine:
 					y = obj.y + (y_hitboxes[1].y + y_hitboxes[1].h - y_hitboxes[0].y) - y_hitboxes[0].y + obj.y
 					obj.set_position(obj.x, y, obj.w, obj.h)
 
+		left_hit = False
+		right_hit = False
+		top_hit = False
+		bottom_hit = False
+
+		if self.test_player.hits(self.wall_left) and self.test_player.x_vel < 0:
+
+			for obj in self.screen_objects:
+				obj.set_position(obj.x - self.test_player.x_vel, obj.y, obj.w, obj.h)
+
+			left_hit = True
 
 
+		if self.test_player.hits(self.wall_right) and self.test_player.x_vel > 0:
+
+			for obj in self.screen_objects:
+				obj.set_position(obj.x - self.test_player.x_vel, obj.y, obj.w, obj.h)
+
+			right_hit = True
 
 
+		if self.test_player.hits(self.wall_top) and self.test_player.y_vel < 0:
 
+			for obj in self.screen_objects:
+				obj.set_position(obj.x, obj.y- self.test_player.y_vel, obj.w, obj.h)
 
+			top_hit = True
 
+		if self.test_player.hits(self.wall_bottom) and self.test_player.y_vel > 0:
 
+			for obj in self.screen_objects:
+				obj.set_position(obj.x, obj.y - self.test_player.y_vel, obj.w, obj.h)
 
-
-
-
+			bottom_hit = True
 
 
 		for obj in self.screen_objects:
 			obj.move_absolute()
+
+
+		for obj in self.screen_objects:
+			if not obj.static_object:
+				obj.y_vel += gravity
+
+		#applying friction
+
+		for obj in self.screen_objects:
+			
+			if obj.x_vel < 0:
+
+				obj.x_vel += min(friction, abs(obj.x_vel))
+
+			elif obj.x_vel > 0:
+
+				obj.x_vel -= min(friction, abs(obj.x_vel))
+
+		if left_hit:
+		 	self.test_player.set_position(self.x_margin, self.test_player.y, self.test_player.w, self.test_player.h)
+		if right_hit:
+		 	self.test_player.set_position(self.width - self.x_margin - self.test_player.w, self.test_player.y, self.test_player.w, self.test_player.h)
+		if top_hit:
+		 	self.test_player.set_position(self.test_player.x, self.y_margin, self.test_player.w, self.test_player.h)
+		if bottom_hit:
+			self.test_player.set_position(self.test_player.x, self.height - self.y_margin - self.test_player.h, self.test_player.w, self.test_player.h)
+
 
 
 	def redraw(self, screen):

@@ -28,7 +28,7 @@ class TestPlayer(InteractableObject):
 			self.x_vel += self.speed
 
 		if keys[pygame.K_SPACE]:
-			self.y_vel = -8
+			self.y_vel -= 2
 
 	def draw(self, screen) -> None:
 		
