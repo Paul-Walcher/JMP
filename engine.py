@@ -4,6 +4,8 @@ from animation import Animation
 from test_player import TestPlayer
 from invisible_wall import InvisibleWall
 from interactable_object import InteractableObject
+from Objects.Blocks.brick import Brick
+from map import *
 
 class Engine:
 
@@ -12,43 +14,32 @@ class Engine:
 
 		self.width = width
 		self.height = height
+		self.objects = []
 		self.screen_objects = []
-		self.test_ground = InvisibleWall(
-											0, height-100, width-100, 100,
-											)
-		self.test_ground_2 = InvisibleWall(0, height-300, width-200, 100)
-		self.test_ground_3 = InvisibleWall(0, 200, 20, 100)
 
-		self.test_ground_4 = InvisibleWall(300, 300, 20, 100)
-		self.test_ground_5 = InvisibleWall(width-50, height-50, 50, 60)
-		self.test_ground_6 = InvisibleWall(
-											width, height-100, width, 100,
-											)
 
 
 		self.x_margin = 50
 		self.y_margin = 50
-
-		self.wall_left = InvisibleWall(0, 0, self.x_margin, self.height)
-		self.wall_right = InvisibleWall(self.width - self.x_margin, 0, self.x_margin, self.height)
-
-		self.wall_top = InvisibleWall(0, 0, self.width, self.y_margin)
-		self.wall_bottom = InvisibleWall(0, self.height - self.y_margin, self.width, self.y_margin)
 
 		self.scrollx = 0
 		self.scrolly = 0
 
 
 		self.test_player = TestPlayer(100, 100, 50, 50)
-		self.screen_objects.append(self.test_ground)
-		self.screen_objects.append(self.test_ground_2)
-		self.screen_objects.append(self.test_ground_3)
-		self.screen_objects.append(self.test_ground_4)
-		self.screen_objects.append(self.test_ground_5)
+
 		self.screen_objects.append(self.test_player)
 
 
+	def load_map(self, MAP):
+		"""
+		loads the map for the jump and run level.
+		"""
+		
+		for y in range(MAP.h):
+			for x in range(MAP.w):
 
+				pass
 
 	def manage_keys(self, keys):
 
@@ -114,7 +105,8 @@ class Engine:
 								if y_hit:
 									break
 
-								if h1.hits(h2):
+								if (h1_org.y + h1_org.h <= h2.y and h1.y + h1.h >= h2.y and not ((h1.x >= h2.x + h2.w) or (h1.x + h1.w <= h2.x))\
+								 or (h1_org.y >= h2.y + h2.h and h1.y  <= h2.y + h2.h) and not ((h1.x >= h2.x + h2.w) or (h1.x + h1.w <= h2.x))):
 									y_hitboxes = (h1, h2, i)
 									y_hit_object = obj2
 									y_hit = True
@@ -143,46 +135,49 @@ class Engine:
 
 								if (h1_org.x + h1_org.w < h2.x and h1.x + h1.w >= h2.x and not ((h1.y >= h2.y + h2.h) or (h1.y + h1.h <= h2.y)))\
 								 or (h1_org.x > h2.x + h2.w and h1.x  <= h2.x + h2.w) and not ((h1.y >= h2.y + h2.h) or (h1.y + h1.h <= h2.y)):
-									print(True)
 									x_hitboxes = (h1, h2, i)
 									x_hit = True
+
+
 
 			#TODO: sort hitboxes by left, right, up down
 
 			#if there was a hit, set the velocity to 0, then adjust the position
 
 
-			if x_hit:
-
-				right = obj.x_vel > 0
-				obj.x_vel = 0
-
-				if right:
-
-					x = obj.x - (x_hitboxes[0].x + x_hitboxes[0].w - x_hitboxes[1].x) + x_hitboxes[0].x - obj.x
-					obj.set_position(x, obj.y, obj.w, obj.h)
+		if x_hit:
 
 
-				else:
-					x = obj.x + (x_hitboxes[1].x + x_hitboxes[1].w - x_hitboxes[0].x) - x_hitboxes[0].x + obj.x
-					obj.set_position(x, obj.y, obj.w, obj.h)
+			right = obj.x_vel > 0
+			obj.x_vel = 0
+
+			if right:
+
+				x = obj.x - (x_hitboxes[0].x + x_hitboxes[0].w - x_hitboxes[1].x) - x_hitboxes[0].x + obj.x
+				obj.set_position(x, obj.y, obj.w, obj.h)
 
 
-			if y_hit:
+			else:
+				x = obj.x + (x_hitboxes[1].x + x_hitboxes[1].w - x_hitboxes[0].x) - x_hitboxes[0].x + obj.x
+				obj.set_position(x, obj.y, obj.w, obj.h)
 
-				down = obj.y_vel > 0
 
-				obj.y_vel = 0
+		if y_hit:
 
-				if down:
+			down = obj.y_vel > 0
 
-					y = obj.y - (y_hitboxes[0].y + y_hitboxes[0].h - y_hitboxes[1].y) + y_hitboxes[0].y - obj.y
-					obj.set_position(obj.x, y, obj.w, obj.h)
+			obj.y_vel = 0
 
-				else:
+			if down:
 
-					y = obj.y + (y_hitboxes[1].y + y_hitboxes[1].h - y_hitboxes[0].y) - y_hitboxes[0].y + obj.y
-					obj.set_position(obj.x, y, obj.w, obj.h)
+				y = obj.y - (y_hitboxes[0].y + y_hitboxes[0].h - y_hitboxes[1].y) + y_hitboxes[0].y - obj.y
+				obj.set_position(obj.x, y, obj.w, obj.h)
+
+			else:
+
+				y = obj.y + (y_hitboxes[1].y + y_hitboxes[1].h - y_hitboxes[0].y) - y_hitboxes[0].y + obj.y
+				obj.set_position(obj.x, y, obj.w, obj.h)
+
 
 		left_hit = False
 		right_hit = False
