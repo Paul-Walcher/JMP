@@ -1,14 +1,15 @@
 import pygame
 
 from interactable_object import InteractableObject
+from Objects.Blocks.block import Block
 from hitbox import Hitbox
 
 
-class Brick(InteractableObject):
+class Brick(Block):
 
 	def __init__(self, x, y, w, h):
 
-		super().__init__(x, y, w, h, [Hitbox(x, y, w, h)], True)
+		super().__init__(x, y, w, h, 0.5, 4, False)
 
 		self.image = pygame.image.load("Images\\brick.png")
 		self.image = pygame.transform.scale(self.image, (self.w, self.h))
@@ -18,7 +19,7 @@ class Brick(InteractableObject):
 		pass
 
 
-	def onKeys(self, keys) -> None:
+	def action(self, keys) -> None:
 		pass
 
 	def draw(self, screen) -> None:

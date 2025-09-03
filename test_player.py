@@ -9,6 +9,7 @@ class TestPlayer(InteractableObject):
 		super().__init__(x, y, w, h, hitboxes)
 
 		self.speed = 5
+		self.maxspeed = 20
 		self.image = pygame.image.load("Images\\sprite_0.png")
 		self.image = pygame.transform.scale(self.image, (w, h))
 
@@ -20,18 +21,16 @@ class TestPlayer(InteractableObject):
 		pass
 
 
-	def onKeys(self, keys) -> None:
+	def action(self, keys) -> None:
 		
-		if keys[pygame.K_LEFT]:
+		if keys[pygame.K_LEFT] and self.x_vel > -self.maxspeed:
 			self.x_vel -= self.speed
-		elif keys[pygame.K_RIGHT]:
+		elif keys[pygame.K_RIGHT] and self.x_vel < self.maxspeed:
 			self.x_vel += self.speed
 
-		if keys[pygame.K_SPACE]:
+		if keys[pygame.K_SPACE] and abs(self.y_vel) < self.maxspeed:
 			self.y_vel -= 2
 
 	def draw(self, screen) -> None:
 		
 		screen.blit(self.image, (self.x, self.y, self.w, self.h))
-		for hb in self.hitboxes:
-			pygame.draw.rect(screen, (0xFF, 0x0, 0x0), (hb.x, hb.y, hb.w, hb.h), 1)

@@ -4,7 +4,10 @@ from animation import Animation
 from test_player import TestPlayer
 from invisible_wall import InvisibleWall
 from interactable_object import InteractableObject
+
+from Objects.Blocks.block import Block
 from Objects.Blocks.brick import Brick
+
 from map import *
 
 class Engine:
@@ -18,6 +21,7 @@ class Engine:
 		self.screen_objects = []
 
 
+		self.blocksize = 50
 
 		self.x_margin = 50
 		self.y_margin = 50
@@ -25,26 +29,63 @@ class Engine:
 		self.scrollx = 0
 		self.scrolly = 0
 
+		self.x_margin = 100
+		self.y_margin = 100
+
+		self.wall_left = InvisibleWall(0, 0, self.x_margin, self.height)
+		self.wall_right = InvisibleWall(self.width-self.x_margin, 0, self.x_margin, self.height)
+		self.wall_top = InvisibleWall(0, 0, self.width, self.y_margin)
+		self.wall_bottom = InvisibleWall(0, self.height-self.y_margin, self.width, self.y_margin)
+
+		self.screen_wall = InvisibleWall(0,0, self.width, self.height)
 
 		self.test_player = TestPlayer(100, 100, 50, 50)
 
-		self.screen_objects.append(self.test_player)
+		self.objects.append(self.test_player)
 
 
 	def load_map(self, MAP):
 		"""
 		loads the map for the jump and run level.
 		"""
-		
+
 		for y in range(MAP.h):
 			for x in range(MAP.w):
 
-				pass
+				if MAP.map[y][x] == ObjectEnum.BRICK:
 
-	def manage_keys(self, keys):
+					brick = Brick(x * self.blocksize, y * self.blocksize, self.blocksize, self.blocksize)
+					self.objects.append(brick)
+
+	def render(self):
+
+		#loads all visible objects into view
+		self.screen_objects = []
+
+		for obj in self.objects:
+
+			hb = Hitbox(obj.x,obj.y,obj.w,obj.h)
+			if hb.hits(self.screen_wall):
+
+				self.screen_objects.append(obj)
+
+				
+
+	def manage_action(self, keys):
 
 		for obj in self.screen_objects:
-			obj.onKeys(keys)
+			obj.action(keys)
+
+	def manage_hits(self):
+
+		for obj in self.screen_objects:
+			for obj2 in self.screen_objects:
+
+				if obj is obj2:
+					continue
+
+				if obj.hits(obj2):
+					obj.onHit(obj2)
 
 	def manage_movement(self):
 		"""
@@ -53,19 +94,16 @@ class Engine:
 
 		#calculate the velocities
 		gravity = 0.5
+		standard_friction = 2
 		friction = 4
 
 
 		#tracing the collision
 		trace_steps = 10
-		x_hit: bool = False
-		y_hit: bool = False
+
 
 		for obj in self.screen_objects:
 
-
-			x_hitboxes = None
-			y_hitboxes = None
 
 			if obj.static_object:
 				continue
@@ -77,12 +115,16 @@ class Engine:
 
 			for i in range(1, trace_steps+1):
 
-				if y_hit and x_hit:
-					break
-
 				x, y = int(obj.x + x_vels), int(obj.y + y_vels)
 
 				y_hit_object = None
+				x_hit_object = None
+
+				x_hit: bool = False
+				y_hit: bool = False
+
+				x_hitboxes = None
+				y_hitboxes = None
 
 				#checking for collision on the y axis
 				if not y_hit:
@@ -136,6 +178,7 @@ class Engine:
 								if (h1_org.x + h1_org.w < h2.x and h1.x + h1.w >= h2.x and not ((h1.y >= h2.y + h2.h) or (h1.y + h1.h <= h2.y)))\
 								 or (h1_org.x > h2.x + h2.w and h1.x  <= h2.x + h2.w) and not ((h1.y >= h2.y + h2.h) or (h1.y + h1.h <= h2.y)):
 									x_hitboxes = (h1, h2, i)
+									x_hit_object = obj2
 									x_hit = True
 
 
@@ -144,39 +187,52 @@ class Engine:
 
 			#if there was a hit, set the velocity to 0, then adjust the position
 
-
-		if x_hit:
-
-
-			right = obj.x_vel > 0
-			obj.x_vel = 0
-
-			if right:
-
-				x = obj.x - (x_hitboxes[0].x + x_hitboxes[0].w - x_hitboxes[1].x) - x_hitboxes[0].x + obj.x
-				obj.set_position(x, obj.y, obj.w, obj.h)
+			if x_hit:
 
 
+				right = obj.x_vel > 0
+				x_vl_prev = obj.x_vel
+				obj.x_vel = 0
+
+				if right:
+
+					x = obj.x - (x_hitboxes[0].x + x_hitboxes[0].w - x_hitboxes[1].x) - x_hitboxes[0].x + obj.x
+					obj.set_position(x, obj.y, obj.w, obj.h)
+
+
+				else:
+					x = obj.x + (x_hitboxes[1].x + x_hitboxes[1].w - x_hitboxes[0].x) - x_hitboxes[0].x + obj.x
+					obj.set_position(x, obj.y, obj.w, obj.h)
+
+
+			if y_hit:
+
+
+				down = obj.y_vel > 0
+
+				y_vel_prev = obj.y_vel
+				obj.y_vel = 0
+
+				if down:
+
+					y = obj.y - (y_hitboxes[0].y + y_hitboxes[0].h - y_hitboxes[1].y) + y_hitboxes[0].y - obj.y
+					obj.set_position(obj.x, y, obj.w, obj.h)
+
+					if isinstance(obj2, Block):
+
+						obj.y_vel = int(-obj2.bounce * y_vel_prev)
+						friction = obj2.friction
+
+
+				else:
+
+					y = obj.y + (y_hitboxes[1].y + y_hitboxes[1].h - y_hitboxes[0].y) - y_hitboxes[0].y + obj.y
+					obj.set_position(obj.x, y, obj.w, obj.h)
+
+					friction = standard_friction
 			else:
-				x = obj.x + (x_hitboxes[1].x + x_hitboxes[1].w - x_hitboxes[0].x) - x_hitboxes[0].x + obj.x
-				obj.set_position(x, obj.y, obj.w, obj.h)
 
-
-		if y_hit:
-
-			down = obj.y_vel > 0
-
-			obj.y_vel = 0
-
-			if down:
-
-				y = obj.y - (y_hitboxes[0].y + y_hitboxes[0].h - y_hitboxes[1].y) + y_hitboxes[0].y - obj.y
-				obj.set_position(obj.x, y, obj.w, obj.h)
-
-			else:
-
-				y = obj.y + (y_hitboxes[1].y + y_hitboxes[1].h - y_hitboxes[0].y) - y_hitboxes[0].y + obj.y
-				obj.set_position(obj.x, y, obj.w, obj.h)
+				friction = standard_friction
 
 
 		left_hit = False
@@ -186,15 +242,16 @@ class Engine:
 
 		if self.test_player.hits(self.wall_left) and self.test_player.x_vel < 0:
 
-			for obj in self.screen_objects:
+			for obj in self.objects:
 				obj.set_position(obj.x - self.test_player.x_vel, obj.y, obj.w, obj.h)
+
 
 			left_hit = True
 
 
 		if self.test_player.hits(self.wall_right) and self.test_player.x_vel > 0:
 
-			for obj in self.screen_objects:
+			for obj in self.objects:
 				obj.set_position(obj.x - self.test_player.x_vel, obj.y, obj.w, obj.h)
 
 			right_hit = True
@@ -202,14 +259,14 @@ class Engine:
 
 		if self.test_player.hits(self.wall_top) and self.test_player.y_vel < 0:
 
-			for obj in self.screen_objects:
+			for obj in self.objects:
 				obj.set_position(obj.x, obj.y- self.test_player.y_vel, obj.w, obj.h)
 
 			top_hit = True
 
 		if self.test_player.hits(self.wall_bottom) and self.test_player.y_vel > 0:
 
-			for obj in self.screen_objects:
+			for obj in self.objects:
 				obj.set_position(obj.x, obj.y - self.test_player.y_vel, obj.w, obj.h)
 
 			bottom_hit = True

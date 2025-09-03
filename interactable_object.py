@@ -22,7 +22,7 @@ class InteractableObject(ABC):
 		pass
 
 	@abstractmethod
-	def onKeys(self, keys) -> None:
+	def action(self, keys) -> None:
 		pass
 
 	@abstractmethod

@@ -1,7 +1,16 @@
 import pygame
 from engine import Engine
 
+from map import *
+from Objects.Blocks.brick import Brick
+
+
+
 pygame.init()
+
+gmap = Map(50, 50)
+gmap.map[5] = [ObjectEnum.BRICK for i in range(50)]
+gmap.map[10] = [ObjectEnum.BRICK for i in range(50)]
 
 def main():
 
@@ -10,6 +19,8 @@ def main():
 	quit : bool = False
 
 	main_engine = Engine(width, height)
+
+	main_engine.load_map(gmap)
 
 	clock = pygame.time.Clock()
 	fps = 60
@@ -26,8 +37,11 @@ def main():
 			if event.type == pygame.QUIT:
 				quit = True
 
-		main_engine.manage_keys(pygame.key.get_pressed())
+		main_engine.render()
+
+		main_engine.manage_action(pygame.key.get_pressed())
 		main_engine.manage_movement()
+		main_engine.manage_hits()
 
 		main_engine.redraw(screen)
 

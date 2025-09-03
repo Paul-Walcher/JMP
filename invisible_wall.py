@@ -13,7 +13,7 @@ class InvisibleWall(InteractableObject):
 		pass
 
 
-	def onKeys(self, keys) -> None:
+	def action(self, keys) -> None:
 		pass
 
 	def draw(self, screen) -> None:
