@@ -3,7 +3,7 @@ from hitbox import Hitbox
 from animation import Animation
 from test_player import TestPlayer
 from invisible_wall import InvisibleWall
-from interactable_object import InteractableObject
+from interactable_object import InteractableObject, Direction
 
 from Objects.Blocks.block import Block
 from Objects.Blocks.brick import Brick
@@ -76,16 +76,6 @@ class Engine:
 		for obj in self.screen_objects:
 			obj.action(keys)
 
-	def manage_hits(self):
-
-		for obj in self.screen_objects:
-			for obj2 in self.screen_objects:
-
-				if obj is obj2:
-					continue
-
-				if obj.hits(obj2):
-					obj.onHit(obj2)
 
 	def manage_movement(self):
 		"""
@@ -126,6 +116,8 @@ class Engine:
 				x_hitboxes = None
 				y_hitboxes = None
 
+				direction = None
+
 				#checking for collision on the y axis
 				if not y_hit:
 					for obj2 in self.screen_objects:
@@ -133,7 +125,7 @@ class Engine:
 						if y_hit:
 							break
 
-						if obj is obj2 or not obj2.solid:
+						if obj is obj2:
 							continue
 
 						for h1 in obj.hitboxes:
@@ -198,11 +190,14 @@ class Engine:
 
 					x = obj.x - (x_hitboxes[0].x + x_hitboxes[0].w - x_hitboxes[1].x) - x_hitboxes[0].x + obj.x
 					obj.set_position(x, obj.y, obj.w, obj.h)
+					obj.onHit(obj2, Direction.RIGHT)
+
 
 
 				else:
 					x = obj.x + (x_hitboxes[1].x + x_hitboxes[1].w - x_hitboxes[0].x) - x_hitboxes[0].x + obj.x
 					obj.set_position(x, obj.y, obj.w, obj.h)
+					obj.onHit(obj2, Direction.LEFT)
 
 
 			if y_hit:
@@ -218,6 +213,8 @@ class Engine:
 					y = obj.y - (y_hitboxes[0].y + y_hitboxes[0].h - y_hitboxes[1].y) + y_hitboxes[0].y - obj.y
 					obj.set_position(obj.x, y, obj.w, obj.h)
 
+					obj.onHit(obj2, Direction.DOWN)
+
 					if isinstance(obj2, Block):
 
 						obj.y_vel = int(-obj2.bounce * y_vel_prev)
@@ -228,6 +225,7 @@ class Engine:
 
 					y = obj.y + (y_hitboxes[1].y + y_hitboxes[1].h - y_hitboxes[0].y) - y_hitboxes[0].y + obj.y
 					obj.set_position(obj.x, y, obj.w, obj.h)
+					obj.onHit(obj2, Direction.UP)
 
 					friction = standard_friction
 			else:

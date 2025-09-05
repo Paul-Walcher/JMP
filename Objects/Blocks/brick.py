@@ -15,7 +15,7 @@ class Brick(Block):
 		self.image = pygame.transform.scale(self.image, (self.w, self.h))
 
 
-	def onHit(self, other: InteractableObject) -> None:
+	def onHit(self, other: InteractableObject, direction: int) -> None:
 		pass
 
 

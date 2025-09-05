@@ -2,6 +2,12 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+class Direction:
+
+	LEFT = -1
+	RIGHT = 0
+	UP = 1
+	DOWN = 2
 
 class InteractableObject(ABC):
 
@@ -18,7 +24,7 @@ class InteractableObject(ABC):
 		self.solid = solid #if the player can go through
 
 	@abstractmethod
-	def onHit(self, other: InteractableObject) -> None:
+	def onHit(self, other: InteractableObject, direction: int) -> None:
 		pass
 
 	@abstractmethod

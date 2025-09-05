@@ -41,7 +41,6 @@ def main():
 
 		main_engine.manage_action(pygame.key.get_pressed())
 		main_engine.manage_movement()
-		main_engine.manage_hits()
 
 		main_engine.redraw(screen)
 
