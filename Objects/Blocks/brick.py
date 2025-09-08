@@ -7,9 +7,9 @@ from hitbox import Hitbox
 
 class Brick(Block):
 
-	def __init__(self, x, y, w, h):
+	def __init__(self, x, y, w, h, engine):
 
-		super().__init__(x, y, w, h, 0.5, 4, False)
+		super().__init__(x, y, w, h, engine, 0.5, 4, False)
 
 		self.image = pygame.image.load("Images\\brick.png")
 		self.image = pygame.transform.scale(self.image, (self.w, self.h))

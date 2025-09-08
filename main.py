@@ -9,8 +9,8 @@ from Objects.Blocks.brick import Brick
 pygame.init()
 
 gmap = Map(50, 50)
-gmap.map[5] = [ObjectEnum.BRICK for i in range(50)]
-gmap.map[10] = [ObjectEnum.BRICK for i in range(50)]
+gmap.map[5] = [ObjectEnum.BRICK for i in range(10)] + [ObjectEnum.NONE for i in range(40)]
+gmap.map[10] = [ObjectEnum.BRICK for i in range(10)] + [ObjectEnum.NONE for i in range(40)]
 
 def main():
 
@@ -41,6 +41,7 @@ def main():
 
 		main_engine.manage_action(pygame.key.get_pressed())
 		main_engine.manage_movement()
+		main_engine.garbage_collection()
 
 		main_engine.redraw(screen)
 

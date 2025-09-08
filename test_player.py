@@ -1,20 +1,23 @@
 import pygame
 from interactable_object import InteractableObject, Direction
 from hitbox import Hitbox
+from Objects.Projectiles.simple_projectile import SimpleProjectile
 
-from math import cos, sin
+from math import cos, sin, sqrt
 
 class TestPlayer(InteractableObject):
 
-	def __init__(self, x: int, y: int, w: int, h: int, hitboxes = []):
+	def __init__(self, x: int, y: int, w: int, h: int, hitboxes, engine):
 
-		super().__init__(x, y, w, h, hitboxes)
+		super().__init__(x, y, w, h, hitboxes, engine)
 
 		self.speed = 4.2
 		self.jump_height = 7.5
 		self.maxspeed = 20
 		self.image = pygame.image.load("Images\\sprite_0.png")
 		self.image = pygame.transform.scale(self.image, (w, h))
+
+		self.engine = engine
 
 		self.hitboxes.append(Hitbox(x, y, w, h))
 		self.jumping = False
@@ -54,8 +57,21 @@ class TestPlayer(InteractableObject):
 
 		if keys[pygame.K_UP]:
 			self.up_pressed = True
+		elif self.up_pressed and not keys[pygame.K_UP]:
+			self.up_pressed = False
+
+			x, y = (self.endpoint[0]-self.x, self.endpoint[1]-self.y)
+			norm = sqrt(x*x + y*y)
+			#spawning projectile
+			initial_x_vel = x / norm
+			initial_y_vel = y / norm
+
+
+			proj = SimpleProjectile(self.x + self.w//2, self.y + self.h//2, 10, 10, self.engine, initial_x_vel, initial_y_vel)
+			self.engine.add_extra_object(proj)
 		else:
 			self.up_pressed = False
+
 
 
 

@@ -11,17 +11,19 @@ class Direction:
 
 class InteractableObject(ABC):
 
-	def __init__(self, x: int, y: int, w: int, h: int, hitboxes = [], static_object = False, solid=True):
+	def __init__(self, x: int, y: int, w: int, h: int, hitboxes, engine, static_object = False, solid=True):
 
 		self.x = x
 		self.y = y
 		self.w = w
 		self.h = h
+		self.engine = engine
 		self.x_vel = 0
 		self.y_vel = 0
 		self.hitboxes = hitboxes
 		self.static_object = static_object
 		self.solid = solid #if the player can go through
+		self.no_friction = False
 
 	@abstractmethod
 	def onHit(self, other: InteractableObject, direction: int) -> None:

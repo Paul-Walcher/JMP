@@ -39,22 +39,28 @@ class Engine:
 
 		self.screen_wall = InvisibleWall(0,0, self.width, self.height)
 
-		self.test_player = TestPlayer(100, 100, 50, 50)
+		self.test_player = TestPlayer(100, 100, 50, 50, [], self)
 
 		self.objects.append(self.test_player)
 
+		self.render_extra = []
+
+		self.scrollx = 0
+		self.scrolly = 0
 
 	def load_map(self, MAP):
 		"""
 		loads the map for the jump and run level.
 		"""
 
+		self.map = MAP
+
 		for y in range(MAP.h):
 			for x in range(MAP.w):
 
 				if MAP.map[y][x] == ObjectEnum.BRICK:
 
-					brick = Brick(x * self.blocksize, y * self.blocksize, self.blocksize, self.blocksize)
+					brick = Brick(x * self.blocksize, y * self.blocksize, self.blocksize, self.blocksize, self)
 					self.objects.append(brick)
 
 	def render(self):
@@ -69,6 +75,38 @@ class Engine:
 
 				self.screen_objects.append(obj)
 
+		self.screen_objects.extend(self.render_extra)
+
+	def garbage_collection(self):
+
+		"""
+		removes the objects that fly past the top, bottom,left and right walls
+		"""
+
+		print(self.scrollx)
+		outside = lambda obj: obj.x+obj.w < -self.scrollx or obj.x > self.map.w * self.blocksize - self.scrollx \
+								or obj.y+obj.h < -self.scrolly or obj.y > self.map.h * self.blocksize -self.scrolly
+
+		to_remove = []
+		for i in range(len(self.objects)):
+
+			if outside(self.objects[i]):
+				to_remove.append(i)
+				print(self.objects[i])
+
+		for i in to_remove:
+			self.objects.pop(i)
+
+		to_remove = []
+		for i in range(len(self.render_extra)):
+
+			if outside(self.render_extra[i]):
+				to_remove.append(i)
+
+		for i in to_remove:
+			self.render_extra.pop(i)
+
+
 				
 
 	def manage_action(self, keys):
@@ -82,6 +120,8 @@ class Engine:
 		this method manages the movement of all 
 		"""
 
+		print(len(self.screen_objects))
+
 		#calculate the velocities
 		gravity = 0.5
 		standard_friction = 2
@@ -91,9 +131,9 @@ class Engine:
 		#tracing the collision
 		trace_steps = 10
 
+		frictions = {}
 
 		for obj in self.screen_objects:
-
 
 			if obj.static_object:
 				continue
@@ -215,10 +255,12 @@ class Engine:
 
 					obj.onHit(obj2, Direction.DOWN)
 
+
 					if isinstance(obj2, Block):
 
 						obj.y_vel = int(-obj2.bounce * y_vel_prev)
-						friction = obj2.friction
+						frictions[obj] = obj2.friction
+
 
 
 				else:
@@ -226,11 +268,6 @@ class Engine:
 					y = obj.y + (y_hitboxes[1].y + y_hitboxes[1].h - y_hitboxes[0].y) - y_hitboxes[0].y + obj.y
 					obj.set_position(obj.x, y, obj.w, obj.h)
 					obj.onHit(obj2, Direction.UP)
-
-					friction = standard_friction
-			else:
-
-				friction = standard_friction
 
 
 		left_hit = False
@@ -245,6 +282,7 @@ class Engine:
 
 
 			left_hit = True
+			self.scrollx += self.test_player.x_vel
 
 
 		if self.test_player.hits(self.wall_right) and self.test_player.x_vel > 0:
@@ -254,6 +292,9 @@ class Engine:
 
 			right_hit = True
 
+			self.scrollx += self.test_player.x_vel
+
+
 
 		if self.test_player.hits(self.wall_top) and self.test_player.y_vel < 0:
 
@@ -262,12 +303,18 @@ class Engine:
 
 			top_hit = True
 
+			self.scrolly += self.test_player.y_vel
+
+
 		if self.test_player.hits(self.wall_bottom) and self.test_player.y_vel > 0:
 
 			for obj in self.objects:
 				obj.set_position(obj.x, obj.y - self.test_player.y_vel, obj.w, obj.h)
 
 			bottom_hit = True
+
+			self.scrolly += self.test_player.y_vel
+
 
 
 		for obj in self.screen_objects:
@@ -281,14 +328,21 @@ class Engine:
 		#applying friction
 
 		for obj in self.screen_objects:
-			
+
+
+			sf = (friction if obj not in frictions else frictions[obj])
+
+			if obj not in frictions and obj.no_friction:
+				continue
+
 			if obj.x_vel < 0:
 
-				obj.x_vel += min(friction, abs(obj.x_vel))
+				obj.x_vel += min(sf, abs(obj.x_vel))
 
 			elif obj.x_vel > 0:
 
-				obj.x_vel -= min(friction, abs(obj.x_vel))
+				obj.x_vel -= min(sf, abs(obj.x_vel))
+			
 
 		if left_hit:
 		 	self.test_player.set_position(self.x_margin, self.test_player.y, self.test_player.w, self.test_player.h)
@@ -309,4 +363,16 @@ class Engine:
 			obj.draw(screen)
 
 		pygame.display.flip()
+
+	def add_object(self, obj):
+		self.objects.append(obj)
+
+	def add_extra_object(self, obj):
+		self.render_extra.append(obj)
+
+	def remove_extra_object(self, obj):
+		self.render_extra.remove(obj)
+
+	def remove_obj(self, obj):
+		self.objects.remove(obj)
 		
