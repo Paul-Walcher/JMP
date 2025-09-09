@@ -8,6 +8,8 @@ from interactable_object import InteractableObject, Direction
 from Objects.Blocks.block import Block
 from Objects.Blocks.brick import Brick
 
+from Objects.Enemies.jumper import Jumper
+
 from map import *
 
 class Engine:
@@ -45,6 +47,10 @@ class Engine:
 
 		self.render_extra = []
 
+		self.j1 = Jumper(200, 100, 200, 200, self, self.test_player)
+
+		self.objects.append(self.j1)
+
 		self.scrollx = 0
 		self.scrolly = 0
 
@@ -61,7 +67,7 @@ class Engine:
 				if MAP.map[y][x] == ObjectEnum.BRICK:
 
 					brick = Brick(x * self.blocksize, y * self.blocksize, self.blocksize, self.blocksize, self)
-					self.objects.append(brick)
+					self.add_extra_object(brick)
 
 	def render(self):
 
@@ -83,22 +89,22 @@ class Engine:
 		removes the objects that fly past the top, bottom,left and right walls
 		"""
 
-		print(self.scrollx)
 		outside = lambda obj: obj.x+obj.w < -self.scrollx or obj.x > self.map.w * self.blocksize - self.scrollx \
-								or obj.y+obj.h < -self.scrolly or obj.y > self.map.h * self.blocksize -self.scrolly
+								or obj.y+obj.h < -self.scrolly or obj.y > self.map.h * self.blocksize - self.scrolly
 
 		to_remove = []
 		for i in range(len(self.objects)):
 
 			if outside(self.objects[i]):
 				to_remove.append(i)
-				print(self.objects[i])
-
 		for i in to_remove:
 			self.objects.pop(i)
 
 		to_remove = []
 		for i in range(len(self.render_extra)):
+
+			test = lambda obj: obj.y+obj.h < -self.scrolly or obj.y > self.map.h * self.blocksize - self.scrolly
+
 
 			if outside(self.render_extra[i]):
 				to_remove.append(i)
@@ -120,10 +126,10 @@ class Engine:
 		this method manages the movement of all 
 		"""
 
-		print(len(self.screen_objects))
 
 		#calculate the velocities
 		gravity = 0.5
+		max_fallspeed = 10
 		standard_friction = 2
 		friction = 4
 
@@ -134,6 +140,7 @@ class Engine:
 		frictions = {}
 
 		for obj in self.screen_objects:
+
 
 			if obj.static_object:
 				continue
@@ -179,11 +186,14 @@ class Engine:
 								if y_hit:
 									break
 
+
+
 								if (h1_org.y + h1_org.h <= h2.y and h1.y + h1.h >= h2.y and not ((h1.x >= h2.x + h2.w) or (h1.x + h1.w <= h2.x))\
 								 or (h1_org.y >= h2.y + h2.h and h1.y  <= h2.y + h2.h) and not ((h1.x >= h2.x + h2.w) or (h1.x + h1.w <= h2.x))):
 									y_hitboxes = (h1, h2, i)
 									y_hit_object = obj2
 									y_hit = True
+
 
 				#checking for collision on the x axis
 				if not x_hit:
@@ -215,45 +225,49 @@ class Engine:
 
 
 
-			#TODO: sort hitboxes by left, right, up down
+			
 
 			#if there was a hit, set the velocity to 0, then adjust the position
-
 			if x_hit:
 
 
 				right = obj.x_vel > 0
+				left = obj.x_vel < 0
 				x_vl_prev = obj.x_vel
 				obj.x_vel = 0
 
 				if right:
 
-					x = obj.x - (x_hitboxes[0].x + x_hitboxes[0].w - x_hitboxes[1].x) - x_hitboxes[0].x + obj.x
+					x = x_hit_object.x - obj.w-5
 					obj.set_position(x, obj.y, obj.w, obj.h)
-					obj.onHit(obj2, Direction.RIGHT)
+					obj.onHit(x_hit_object, Direction.RIGHT)
 
 
 
-				else:
-					x = obj.x + (x_hitboxes[1].x + x_hitboxes[1].w - x_hitboxes[0].x) - x_hitboxes[0].x + obj.x
+				elif left:
+					x = x_hit_object.x + x_hit_object.w + 5
 					obj.set_position(x, obj.y, obj.w, obj.h)
-					obj.onHit(obj2, Direction.LEFT)
+					obj.onHit(x_hit_object, Direction.LEFT)
 
 
 			if y_hit:
 
 
-				down = obj.y_vel > 0
+				down = obj.y_vel > 0 and abs(obj.y_vel) > gravity
+				up = obj.y_vel < 0 and abs(obj.y_vel) > gravity
+
+				if obj is self.j1 and y_hit_object is self.test_player:
+					print(obj.y_vel)
 
 				y_vel_prev = obj.y_vel
 				obj.y_vel = 0
 
 				if down:
 
-					y = obj.y - (y_hitboxes[0].y + y_hitboxes[0].h - y_hitboxes[1].y) + y_hitboxes[0].y - obj.y
+					y = y_hit_object.y - obj.h
 					obj.set_position(obj.x, y, obj.w, obj.h)
 
-					obj.onHit(obj2, Direction.DOWN)
+					obj.onHit(y_hit_object, Direction.DOWN)
 
 
 					if isinstance(obj2, Block):
@@ -263,11 +277,12 @@ class Engine:
 
 
 
-				else:
+				elif up:
 
-					y = obj.y + (y_hitboxes[1].y + y_hitboxes[1].h - y_hitboxes[0].y) - y_hitboxes[0].y + obj.y
+
+					y = y_hit_object.y + y_hit_object.h
 					obj.set_position(obj.x, y, obj.w, obj.h)
-					obj.onHit(obj2, Direction.UP)
+					obj.onHit(y_hit_object, Direction.UP)
 
 
 		left_hit = False
@@ -279,6 +294,8 @@ class Engine:
 
 			for obj in self.objects:
 				obj.set_position(obj.x - self.test_player.x_vel, obj.y, obj.w, obj.h)
+			for obj in self.render_extra:
+				obj.set_position(obj.x - self.test_player.x_vel, obj.y, obj.w, obj.h)
 
 
 			left_hit = True
@@ -288,6 +305,8 @@ class Engine:
 		if self.test_player.hits(self.wall_right) and self.test_player.x_vel > 0:
 
 			for obj in self.objects:
+				obj.set_position(obj.x - self.test_player.x_vel, obj.y, obj.w, obj.h)
+			for obj in self.render_extra:
 				obj.set_position(obj.x - self.test_player.x_vel, obj.y, obj.w, obj.h)
 
 			right_hit = True
@@ -300,6 +319,8 @@ class Engine:
 
 			for obj in self.objects:
 				obj.set_position(obj.x, obj.y- self.test_player.y_vel, obj.w, obj.h)
+			for obj in self.render_extra:
+				obj.set_position(obj.x, obj.y- self.test_player.y_vel, obj.w, obj.h)
 
 			top_hit = True
 
@@ -310,6 +331,8 @@ class Engine:
 
 			for obj in self.objects:
 				obj.set_position(obj.x, obj.y - self.test_player.y_vel, obj.w, obj.h)
+			for obj in self.render_extra:
+				obj.set_position(obj.x, obj.y- self.test_player.y_vel, obj.w, obj.h)
 
 			bottom_hit = True
 
@@ -322,7 +345,7 @@ class Engine:
 
 
 		for obj in self.screen_objects:
-			if not obj.static_object:
+			if not obj.static_object and obj.y_vel < max_fallspeed:
 				obj.y_vel += gravity
 
 		#applying friction
@@ -373,6 +396,6 @@ class Engine:
 	def remove_extra_object(self, obj):
 		self.render_extra.remove(obj)
 
-	def remove_obj(self, obj):
+	def remove_object(self, obj):
 		self.objects.remove(obj)
 		

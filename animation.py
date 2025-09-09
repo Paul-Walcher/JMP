@@ -18,6 +18,9 @@ class Animation:
 
 		self.image_index: int = 0
 		self.last_count: float = perf_counter()
+		self.revolutions = 0
+
+		self.n_runs = 0
 
 	def pause(self):
 		self.paused = True
@@ -37,8 +40,18 @@ class Animation:
 		self.last_count = perf_counter()
 
 
+	def play_n(self, x):
+
+		self.revolutions = x
+		self.n_runs = 0
+		self._continue()
+
+
 	def run(self):
 
+		if self.n_runs >= self.revolutions:
+
+			return
 
 		if self.paused:
 			return
@@ -50,11 +63,12 @@ class Animation:
 			self.image_index += 1
 
 			if self.image_index >= len(self.images):
+				print(self.image_index, len(self.images))
 				self.image_index = 0
-
-				if not self.loop:
-
-					self.paused = True
+				self.n_runs += 1
+				
+				if self.n_runs >= self.revolutions and self.revolutions != -1:
+					self.pause()
 
 			self.last_count = perf_counter()
 

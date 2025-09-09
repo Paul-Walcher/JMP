@@ -7,7 +7,7 @@ from interactable_object import InteractableObject
 from hitbox import Hitbox
 from explosion import Explosion
 
-class SimpleProjectile(Projectile):
+class EvilProjectile(Projectile):
 
 	def __init__(self, x, y, w, h, engine, initial_x_vel, initial_y_vel):
 
@@ -25,6 +25,8 @@ class SimpleProjectile(Projectile):
 		self.engine.remove_extra_object(self)
 		explosion = Explosion(self.x, self.y, 3*self.w, 3*self.h, self.engine)
 		self.engine.add_object(explosion)
+
+		
 
 
 	def action(self, keys) -> None:

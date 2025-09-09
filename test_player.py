@@ -34,7 +34,7 @@ class TestPlayer(InteractableObject):
 
 		self.angle = 0
 		self.radius = 100
-		self.angular_speed = 0.1 #per tick
+		self.angular_speed = 0.2 #per tick
 		self.endpoint = (0, 0)
 
 

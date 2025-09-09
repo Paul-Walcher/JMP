@@ -14,6 +14,8 @@ class Hitbox:
 		return not (self.x+self.w < b.x or self.x > b.x+b.w or self.y + self.h < b.y or self.y > b.y+b.h)
 
 
+	def __str__(self):
 
+		return "{},{},{},{}".format(self.x, self.y, self.w, self.h)
 
 			

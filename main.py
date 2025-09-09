@@ -7,10 +7,11 @@ from Objects.Blocks.brick import Brick
 
 
 pygame.init()
+pygame.mixer.init()
 
 gmap = Map(50, 50)
-gmap.map[5] = [ObjectEnum.BRICK for i in range(10)] + [ObjectEnum.NONE for i in range(40)]
-gmap.map[10] = [ObjectEnum.BRICK for i in range(10)] + [ObjectEnum.NONE for i in range(40)]
+gmap.map[40] = [ObjectEnum.BRICK for i in range(50)]
+gmap.map[45] = [ObjectEnum.BRICK for i in range(50)]
 
 def main():
 
