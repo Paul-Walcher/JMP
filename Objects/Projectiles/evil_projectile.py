@@ -11,13 +11,14 @@ class EvilProjectile(Projectile):
 
 	def __init__(self, x, y, w, h, engine, initial_x_vel, initial_y_vel):
 
-		super().__init__(x, y, w, h, engine, initial_x_vel, initial_y_vel, 20)
+		super().__init__(x, y, w, h, engine, initial_x_vel, initial_y_vel, 15)
 
 		self.image = pygame.image.load("Images\\simple_bullet.png")
 
 		self.image = pygame.transform.scale(self.image, (self.w, self.h))
 		self.degrees = 0
 		self.angular_speed = 0.01
+		self.own_gravity = 0
 
 
 	def onHit(self, other: InteractableObject, direction: int) -> None:

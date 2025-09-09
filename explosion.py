@@ -2,6 +2,7 @@ import pygame
 
 from animation import Animation
 from interactable_object import InteractableObject
+import time
 
 class Explosion(InteractableObject):
 
@@ -9,15 +10,17 @@ class Explosion(InteractableObject):
 
 		super().__init__(x, y, w, h,[], engine)
 
-		self.image = pygame.image.load("Images\\brick.png")
-		self.image = pygame.transform.scale(self.image, (self.w, self.h))
 
 		self.explosion = Animation(self.x, self.y, self.w,self.h,
-									["Images\\Explosion\\sprite_"+str(i)+".png" for i in range(3)],
-									[0.5,0.5, 0.5])
+									["Images\\Explosion\\Explosion_blue_circle\\Explosion_blue_circle"+str(i+1)+".png" for i in range(10)],
+									[0.05 for i in range(10)])
+		self.explosion.play_n(1)
 
 		self.sound = pygame.mixer.Sound("Sounds\\explosion-42132.mp3")
-		self.sound.play()
+		#self.sound.play()
+		self.own_gravity = 0
+
+
 
 
 	def onHit(self, other: InteractableObject, direction: int) -> None:
@@ -25,21 +28,11 @@ class Explosion(InteractableObject):
 
 
 	def action(self, keys) -> None:
-		pass
 
-	def draw(self, screen) -> None:
-		
-		screen.blit(self.image, (self.x, self.y))
-
-
-	def onHit(self, other: InteractableObject, direction: int) -> None:
-		pass
-
-
-	def action(self, keys) -> None:
-		
 		if self.explosion.n_runs == 1:
 			self.engine.remove_object(self)
+
+		self.explosion.run()
 
 	def draw(self, screen) -> None:
 		

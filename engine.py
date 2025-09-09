@@ -8,6 +8,8 @@ from interactable_object import InteractableObject, Direction
 from Objects.Blocks.block import Block
 from Objects.Blocks.brick import Brick
 
+from explosion import Explosion
+
 from Objects.Enemies.jumper import Jumper
 
 from map import *
@@ -67,7 +69,7 @@ class Engine:
 				if MAP.map[y][x] == ObjectEnum.BRICK:
 
 					brick = Brick(x * self.blocksize, y * self.blocksize, self.blocksize, self.blocksize, self)
-					self.add_extra_object(brick)
+					self.add_object(brick)
 
 	def render(self):
 
@@ -188,8 +190,8 @@ class Engine:
 
 
 
-								if (h1_org.y + h1_org.h <= h2.y and h1.y + h1.h >= h2.y and not ((h1.x >= h2.x + h2.w) or (h1.x + h1.w <= h2.x))\
-								 or (h1_org.y >= h2.y + h2.h and h1.y  <= h2.y + h2.h) and not ((h1.x >= h2.x + h2.w) or (h1.x + h1.w <= h2.x))):
+								if (h1_org.y <= h2.y and h1.y + h1.h >= h2.y and not ((h1.x >= h2.x + h2.w) or (h1.x + h1.w <= h2.x))\
+								 or (h1_org.y + h1_org.h >= h2.y + h2.h and h1.y  <= h2.y + h2.h) and not ((h1.x >= h2.x + h2.w) or (h1.x + h1.w <= h2.x))):
 									y_hitboxes = (h1, h2, i)
 									y_hit_object = obj2
 									y_hit = True
@@ -217,8 +219,8 @@ class Engine:
 								if x_hit:
 									break
 
-								if (h1_org.x + h1_org.w < h2.x and h1.x + h1.w >= h2.x and not ((h1.y >= h2.y + h2.h) or (h1.y + h1.h <= h2.y)))\
-								 or (h1_org.x > h2.x + h2.w and h1.x  <= h2.x + h2.w) and not ((h1.y >= h2.y + h2.h) or (h1.y + h1.h <= h2.y)):
+								if (h1_org.x < h2.x and h1.x + h1.w >= h2.x and not ((h1.y >= h2.y + h2.h) or (h1.y + h1.h <= h2.y)))\
+								 or (h1_org.x + h1_org.w > h2.x + h2.w and h1.x  <= h2.x + h2.w) and not ((h1.y >= h2.y + h2.h) or (h1.y + h1.h <= h2.y)):
 									x_hitboxes = (h1, h2, i)
 									x_hit_object = obj2
 									x_hit = True
@@ -346,7 +348,10 @@ class Engine:
 
 		for obj in self.screen_objects:
 			if not obj.static_object and obj.y_vel < max_fallspeed:
-				obj.y_vel += gravity
+				if obj.own_gravity == -1:
+					obj.y_vel += gravity
+				else:
+					obj.y_vel += obj.own_gravity
 
 		#applying friction
 
@@ -394,8 +399,13 @@ class Engine:
 		self.render_extra.append(obj)
 
 	def remove_extra_object(self, obj):
-		self.render_extra.remove(obj)
-
+		try:
+			self.render_extra.remove(obj)
+		except Exception as e:
+			pass
 	def remove_object(self, obj):
-		self.objects.remove(obj)
+		try:
+			self.objects.remove(obj)
+		except Exception as e:
+			pass
 		

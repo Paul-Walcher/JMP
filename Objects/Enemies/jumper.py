@@ -25,10 +25,12 @@ class Jumper(Enemy):
 
 		self.jump_height = 10
 		self.hit_ground = False
-		self.shoot_times = (0.5, 1.5)
+		self.shoot_times = (1.0, 5.0)
 
 		self.last_check = time.perf_counter()
 		self.shoot_time = random.uniform(*self.shoot_times)
+
+		self.speed = 2
 
 	def onHit(self, other, direction: int) -> None:
 		
@@ -52,14 +54,20 @@ class Jumper(Enemy):
 			self.shoot_time = random.uniform(*self.shoot_times)
 
 			midpoint = (self.x + self.w//2, self.y+self.h//2)
-			x_dir = self.player_ref.x - midpoint[0]
-			y_dir = self.player_ref.y - midpoint[1]
+			x_dir = midpoint[0] - self.player_ref.x
+			y_dir = midpoint[1] - self.player_ref.y
 
-			x_dir /= (x_dir + y_dir)
-			y_dir /= (x_dir + y_dir)
 
-			proj = EvilProjectile(midpoint[0], midpoint[1], 10, 10, self.engine, -x_dir, -y_dir)
+			x_w = (self.x if self.player_ref.x < self.x else self.x+self.w)
+
+			proj = EvilProjectile(x_w, midpoint[1], 10, 10, self.engine, -x_dir, -y_dir)
 			self.engine.add_extra_object(proj)
+
+		if abs(self.x-self.player_ref.x) >= 10:
+			if self.player_ref.x < self.x:
+				self.x_vel = -self.speed
+			else:
+				self.x_vel = self.speed
 
 
 		if self.lives <= 0:

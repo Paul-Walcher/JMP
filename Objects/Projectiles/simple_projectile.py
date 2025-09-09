@@ -22,8 +22,9 @@ class SimpleProjectile(Projectile):
 
 	def onHit(self, other: InteractableObject, direction: int) -> None:
 		
+		w, h = self.w * 10, self.h * 10
 		self.engine.remove_extra_object(self)
-		explosion = Explosion(self.x, self.y, 3*self.w, 3*self.h, self.engine)
+		explosion = Explosion(self.x-w//2, self.y-h//2, w, h, self.engine)
 		self.engine.add_object(explosion)
 
 

@@ -63,7 +63,6 @@ class Animation:
 			self.image_index += 1
 
 			if self.image_index >= len(self.images):
-				print(self.image_index, len(self.images))
 				self.image_index = 0
 				self.n_runs += 1
 				
